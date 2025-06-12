@@ -1,0 +1,496 @@
+﻿@model List<NailMVC.ViewModels.HoaDonViewModel>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2 class="text-primary mb-4">📄 Danh sách hóa đơn</h2>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label>Từ ngày</label>
+        <input type="date" class="form-control" name="fromDate" value="@ViewBag.FromDate" />
+    </div>
+    <div class="col-md-3">
+        <label>Đến ngày</label>
+        <input type="date" class="form-control" name="toDate" value="@ViewBag.ToDate" />
+    </div>
+    <div class="col-md-4">
+        <label>Chọn nhân viên</label>
+        <select class="form-select" name="nhanVienId">
+            <option value="">-- Tất cả nhân viên --</option>
+            @foreach (var nv in ViewBag.NhanViens as List<NailMVC.Models.NhanVien>)
+            {
+                var isSelected = (ViewBag.SelectedNhanVienId != null && (int)ViewBag.SelectedNhanVienId == nv.Id) ? "selected" : "";
+                <option value="@nv.Id" selected="@isSelected">@nv.Id - @nv.HoTen</option>
+            }
+        </select>
+
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button class="btn btn-primary w-100" type="submit">🔍 Lọc</button>
+    </div>
+</form>
+
+
+
+
+
+
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">➕ Tạo hóa đơn</button>
+</div>
+
+<table class="table table-bordered text-center align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Ngày lập</th>
+            <th>Khách hàng</th>
+            <th>Nhân viên</th>
+            <th>Thanh toán</th>
+            <th>Hành động</th>
+            <th>Dịch vụ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var hd in Model)
+        {
+            <tr>
+                <td>@hd.NgayLap?.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@hd.TenKhachHang</td>
+                <td>@hd.TenNhanVien</td>
+                <td>@hd.ThanhTien.ToString("N0") đ</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="showEditModal(@hd.Id)">✏️</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteHoaDon(@hd.Id)">🗑️</button>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="showAddDichVu(@hd.Id)">➕</button>
+                    <button class="btn btn-secondary btn-sm" onclick="showChiTietDichVu(@hd.Id)">👁️ Xem</button>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<!-- Modal Thêm hóa đơn -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Tạo hóa đơn mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm">
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label>Ngày lập</label>
+                        <input type="datetime-local" name="NgayLap" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Khách hàng</label>
+                        <select name="KhachHangId" class="form-select">
+                            @foreach (var kh in ViewBag.KhachHangs)
+                            {
+                                <option value="@kh.Id">@kh.Id - @kh.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Nhân viên</label>
+                        <select name="NhanVienId" class="form-select">
+                            @foreach (var nv in ViewBag.NhanViens)
+                            {
+                                <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Tổng tiền</label>
+                        <input type="number" name="TongTien" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giảm giá (%)</label>
+                        <input name="GiamGia" class="form-control" type="number" value="0" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Thành tiền</label>
+                        <input type="number" name="ThanhTien" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Hình thức thanh toán</label>
+                        <select name="HinhThucThanhToan" class="form-select">
+                            <option value="TienMat">Tiền mặt</option>
+                            <option value="ChuyenKhoan">Chuyển khoản</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm()">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa hóa đơn -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Chỉnh sửa hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" name="Id" />
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label>Ngày lập</label>
+                        <input type="datetime-local" name="NgayLap" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Khách hàng</label>
+                        <select name="KhachHangId" class="form-select">
+                            @foreach (var kh in ViewBag.KhachHangs)
+                            {
+                                <option value="@kh.Id">@kh.Id - @kh.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Nhân viên</label>
+                        <select name="NhanVienId" class="form-select">
+                            @foreach (var nv in ViewBag.NhanViens)
+                            {
+                                <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Tổng tiền</label>
+                        <input type="number" name="TongTien" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giảm giá</label>
+                        <input name="GiamGia" class="form-control" type="number" value="0" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Thành tiền</label>
+                        <input type="number" name="ThanhTien" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Hình thức thanh toán</label>
+                        <select name="HinhThucThanhToan" class="form-select">
+                            <option value="TienMat">Tiền mặt</option>
+                            <option value="ChuyenKhoan">Chuyển khoản</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEdit()">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Thêm dịch vụ vào hóa đơn -->
+<div class="modal fade" id="dichVuModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Thêm dịch vụ vào hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="dichVuForm">
+                <input type="hidden" name="HoaDonId" />
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label>Dịch vụ</label>
+                        <select name="DichVuId" class="form-select">
+                            @foreach (var dv in ViewBag.DichVus)
+                            {
+                                <option value="@dv.Id">@dv.TenDichVu - @dv.Gia.ToString("N0") đ</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Số lượng</label>
+                        <input type="number" name="SoLuong" class="form-control" value="1" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Đơn giá</label>
+                        <input type="number" name="DonGia" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitDichVu()">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết dịch vụ -->
+<div class="modal fade" id="chiTietModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Chi tiết dịch vụ trong hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered text-center" id="chiTietTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Dịch vụ</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa dịch vụ -->
+<div class="modal fade" id="editDichVuModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editDichVuForm">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Sửa dịch vụ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" />
+                    <div class="mb-2">
+                        <label>Dịch vụ</label>
+                        <select name="DichVuId" class="form-select" disabled>
+                            @foreach (var dv in ViewBag.DichVus)
+                            {
+                                <option value="@dv.Id">@dv.TenDichVu</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Số lượng</label>
+                        <input type="number" name="SoLuong" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Đơn giá</label>
+                        <input type="number" name="DonGia" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditDichVu()">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const apiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        function submitForm() {
+            const form = new FormData(document.getElementById("createForm"));
+            const obj = {};
+            form.forEach((v, k) => obj[k] = v);
+
+            fetch(apiBaseUrl + "HoaDon", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            }).then(res => {
+                if (res.ok) Swal.fire("Thành công!", "Đã thêm hóa đơn.", "success").then(() => location.reload());
+                else throw new Error("Tạo hóa đơn thất bại!");
+            }).catch(err => Swal.fire("Lỗi", err.message, "error"));
+        }
+
+        function deleteHoaDon(id) {
+            Swal.fire({
+                title: "Xác nhận xóa?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`${apiBaseUrl}HoaDon/${id}`, { method: "DELETE" })
+                        .then(r => {
+                            if (r.ok) Swal.fire("Đã xóa!", "", "success").then(() => location.reload());
+                            else throw new Error("Không thể xóa!");
+                        })
+                        .catch(e => Swal.fire("Lỗi!", e.message, "error"));
+                }
+            });
+        }
+
+        function showAddDichVu(id) {
+            const modal = new bootstrap.Modal(document.getElementById("dichVuModal"));
+            document.querySelector("#dichVuForm input[name='HoaDonId']").value = id;
+            modal.show();
+        }
+
+        function submitDichVu() {
+                  const form = new FormData(document.getElementById("dichVuForm"));
+        const obj = {};
+
+        form.forEach((v, k) => {
+            if (k !== "Id") {
+                // Ép kiểu đúng cho số
+                if (["HoaDonId", "DichVuId", "SoLuong"].includes(k)) obj[k] = parseInt(v);
+                else if (k === "DonGia") obj[k] = parseFloat(v);
+                else obj[k] = v;
+            }
+        });
+
+
+
+            fetch(`${apiBaseUrl}HoaDonDichVu`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            }).then(res => {
+                if (res.ok) Swal.fire("Đã thêm dịch vụ!", "", "success").then(() => location.reload());
+                else throw new Error("Thêm dịch vụ thất bại!");
+            }).catch(e => Swal.fire("Lỗi!", e.message, "error"));
+        }
+
+
+        function showEditModal(id) {
+            fetch(`${apiBaseUrl}HoaDon/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.getElementById("editForm");
+                    form.Id.value = data.Id;
+                    form.NgayLap.value = data.NgayLap?.substring(0, 16);
+                    form.KhachHangId.value = data.KhachHangId;
+                    form.NhanVienId.value = data.NhanVienId;
+                    form.TongTien.value = data.TongTien;
+                    form.GiamGia.value = data.GiamGia;
+                    form.ThanhTien.value = data.ThanhTien;
+                    form.HinhThucThanhToan.value = data.HinhThucThanhToan;
+
+                    const modal = new bootstrap.Modal(document.getElementById("editModal"));
+                    modal.show();
+                }).catch(e => {
+                    console.error("Lỗi khi tải hóa đơn:", e);
+                    Swal.fire("Lỗi", "Không thể tải dữ liệu hóa đơn", "error");
+                });
+        }
+
+        function submitEdit() {
+            const form = new FormData(document.getElementById("editForm"));
+            const obj = {};
+            form.forEach((v, k) => obj[k] = v);
+
+            fetch(`${apiBaseUrl}HoaDon/${obj.Id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            }).then(res => {
+                if (res.ok) Swal.fire("Thành công", "Đã cập nhật hóa đơn", "success").then(() => location.reload());
+                else throw new Error("Cập nhật thất bại");
+            }).catch(e => Swal.fire("Lỗi", e.message, "error"));
+        }
+
+                function showChiTietDichVu(hoaDonId) {
+            fetch(`${apiBaseUrl}HoaDonDichVu/ByHoaDon/${hoaDonId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.querySelector("#chiTietTable tbody");
+                    tbody.innerHTML = "";
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4">Không có dịch vụ nào.</td></tr>`;
+                    } else {
+                        data.forEach(dv => {
+                            const row = `<tr>
+                                <td>${dv.TenDichVu || "?"}</td>
+                                <td>${dv.DonGia?.toLocaleString() || 0}</td>
+                                <td>${dv.SoLuong}</td>
+                                <td>${(dv.DonGia * dv.SoLuong).toLocaleString()}</td>
+                                    <td>
+            <button class="btn btn-sm btn-warning me-1" onclick="editDichVu(${dv.Id})">Sửa</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteDichVu(${dv.Id})">Xoá</button>
+        </td>
+                            </tr>`;
+                            tbody.innerHTML += row;
+                        });
+                    }
+
+                    new bootstrap.Modal(document.getElementById("chiTietModal")).show();
+                })
+                .catch(err => {
+                    Swal.fire("Lỗi!", "Không thể tải chi tiết dịch vụ.", "error");
+                    console.error(err);
+                });
+        }
+
+                function editDichVu(id) {
+            fetch(`${apiBaseUrl}HoaDonDichVu/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.getElementById("editDichVuForm");
+                    form.Id.value = data.Id;
+                    form.DichVuId.value = data.DichVuId;
+                    form.SoLuong.value = data.SoLuong;
+                    form.DonGia.value = data.DonGia;
+
+                    new bootstrap.Modal(document.getElementById("editDichVuModal")).show();
+                })
+                .catch(e => Swal.fire("Lỗi", "Không tải được dữ liệu dịch vụ", "error"));
+        }
+
+        function submitEditDichVu() {
+            const formData = new FormData(document.getElementById("editDichVuForm"));
+            const obj = {};
+            formData.forEach((v, k) => {
+                if (["Id", "SoLuong", "DichVuId"].includes(k)) obj[k] = parseInt(v);
+                else if (k === "DonGia") obj[k] = parseFloat(v);
+            });
+
+            fetch(`${apiBaseUrl}HoaDonDichVu/${obj.Id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            }).then(res => {
+                if (res.ok) Swal.fire("Thành công!", "Đã cập nhật dịch vụ", "success").then(() => location.reload());
+                else throw new Error("Cập nhật thất bại");
+            }).catch(e => Swal.fire("Lỗi", e.message, "error"));
+        }
+
+        function deleteDichVu(id) {
+            Swal.fire({
+                title: "Bạn có chắc chắn?",
+                text: "Hành động này sẽ xoá dịch vụ khỏi hóa đơn.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xoá",
+                cancelButtonText: "Hủy"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`${apiBaseUrl}HoaDonDichVu/${id}`, { method: "DELETE" })
+                        .then(r => {
+                            if (r.ok) Swal.fire("Đã xoá!", "", "success").then(() => location.reload());
+                            else throw new Error("Không thể xoá");
+                        })
+                        .catch(e => Swal.fire("Lỗi!", e.message, "error"));
+                }
+            });
+        }
+
+    </script>
+}

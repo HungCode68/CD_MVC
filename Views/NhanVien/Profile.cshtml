@@ -1,0 +1,73 @@
+﻿@model NailMVC.Models.NhanVien
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var listLuong = ViewBag.Luong as List<NailMVC.Models.LuongNhanVien>;
+}
+
+<h2 class="text-primary mb-4">👤 Thông tin cá nhân</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white fw-bold">
+                Chi tiết nhân viên
+            </div>
+            <div class="card-body">
+                <p><strong>👤 Họ tên:</strong> @Model.HoTen</p>
+                <p><strong>📧 Email:</strong> @Model.Email</p>
+                <p><strong>📱 Số điện thoại:</strong> @Model.SoDienThoai</p>
+                <p><strong>📍 Địa chỉ:</strong> @Model.DiaChi</p>
+                <p><strong>⚧ Giới tính:</strong> @Model.GioiTinh</p>
+                <p><strong>🎂 Ngày sinh:</strong> @Model.NgaySinh?.ToString("dd/MM/yyyy")</p>
+                <p><strong>🕓 Ngày vào làm:</strong> @Model.NgayVaoLam?.ToString("dd/MM/yyyy")</p>
+                <p>
+                    <strong>🔓 Trạng thái:</strong>
+                    <span class="badge @(Model.TrangThai == "Đang làm" ? "bg-success" : "bg-secondary")">
+                        @Model.TrangThai
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="text-secondary mt-5 mb-3">💰 Thông tin lương</h4>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped shadow-sm text-center">
+        <thead class="table-primary text-dark">
+            <tr>
+                <th>Tháng</th>
+                <th>Năm</th>
+                <th>Hoa hồng (%)</th>
+                <th>Tiền tip</th>
+                <th>Thưởng khác</th>
+                <th>Tổng hóa đơn</th>
+                <th>Tổng lương</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (listLuong != null && listLuong.Count > 0)
+            {
+                foreach (var luong in listLuong)
+                {
+                    <tr>
+                        <td>@luong.ThangLuong</td>
+                        <td>@luong.NamLuong</td>
+                        <td><span class="text-info fw-semibold">@luong.PhanTramHoaDon %</span></td>
+                        <td>@luong.TienTip?.ToString("N0") đ</td>
+                        <td>@luong.ThuongKhac?.ToString("N0") đ</td>
+                        <td><span class="badge bg-light text-dark">@luong.TongHoaDon</span></td>
+                        <td class="fw-bold text-success">@luong.TongLuong.ToString("N0") đ</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-muted">Không có dữ liệu lương.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

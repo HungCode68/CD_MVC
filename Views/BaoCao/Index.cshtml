@@ -1,0 +1,91 @@
+﻿@model List<NailMVC.Models.BaoCao>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2 class="text-primary mb-4">📊 Báo cáo doanh thu</h2>
+
+<!-- Bộ lọc -->
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label class="form-label">Từ ngày</label>
+        <input type="date" name="from" value="@ViewBag.From" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Đến ngày</label>
+        <input type="date" name="to" value="@ViewBag.To" class="form-control" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Lọc</button>
+    </div>
+</form>
+
+<!-- Biểu đồ -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <canvas id="doanhThuChart" height="120"></canvas>
+    </div>
+</div>
+
+<!-- Bảng thống kê -->
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Ngày</th>
+            <th>Nội dung</th>
+            <th>Doanh thu</th>
+            <th>Khách hàng</th>
+            <th>Dịch vụ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.NgayBaoCao.ToString("dd/MM/yyyy")</td>
+                <td>@item.NoiDung</td>
+                <td>@item.TongDoanhThu.ToString("N0") đ</td>
+                <td>@item.SoLuongKhach</td>
+                <td>@item.SoLuongDichVu</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(Json.Serialize(Model.Select(b => b.NgayBaoCao.ToString("dd/MM"))));
+        const doanhThu = @Html.Raw(Json.Serialize(Model.Select(b => b.TongDoanhThu)));
+
+        const ctx = document.getElementById('doanhThuChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: doanhThu,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' đ';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

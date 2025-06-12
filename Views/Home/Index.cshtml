@@ -1,0 +1,220 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- AOS CSS -->
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+<style>
+    .hero-section {
+        background: url('https://penviet.com/wp-content/uploads/2023/07/thiet-ke-cua-hang-spa-dep-5.jpg') center/cover no-repeat;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        position: relative;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        padding: 20px;
+    }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+        }
+
+    .btn-book {
+        background-color: #d8a4a4;
+        border: none;
+        padding: 12px 28px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: white;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-book:hover {
+            background-color: #b87777;
+        }
+
+    .footer-bg {
+        background: url('https://www.nailsstudio.org/wp-content/uploads/2025/01/414734045_2617477238400507_8980465164347045817_n-1.jpg') center/cover no-repeat;
+        background-attachment: fixed;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .footer-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        padding: 60px 0 40px;
+    }
+
+    .footer-bg h5 {
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .footer-bg ul {
+        list-style: none;
+        padding: 0;
+    }
+
+        .footer-bg ul li {
+            margin-bottom: 8px;
+        }
+
+    .footer-bottom {
+        background-color: rgba(0, 0, 0, 0.7);
+        text-align: center;
+        padding: 15px 0;
+        font-size: 0.9rem;
+    }
+
+    /* Wave Animation */
+    .wave-container {
+        position: absolute;
+        top: -60px;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+    }
+
+        .wave-container svg {
+            position: relative;
+            display: block;
+            width: calc(150% + 1.3px);
+            height: 80px;
+        }
+
+        .wave-container .wave1 {
+            animation: waveMove 10s linear infinite;
+            fill: rgba(255, 255, 255, 0.3);
+        }
+
+    @@keyframes waveMove {
+        0%
+
+    {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+
+    }
+</style>
+
+<div class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content" data-aos="fade-up">
+        <h1>Chào mừng đến với Tiệm Nail & Spa</h1>
+        <p>Khám phá không gian làm đẹp hiện đại, thư giãn và dịch vụ chuyên nghiệp cho mọi khách hàng.</p>
+        <a href="/DatLich" class="btn btn-book">Đặt lịch ngay</a>
+    </div>
+</div>
+
+<section class="services py-5 text-center">
+    <div class="container">
+        <h2 class="text-dark mb-4" data-aos="fade-up">Dịch vụ nổi bật</h2>
+        <div class="row">
+            <div class="col-md-4" data-aos="fade-right">
+                <h4>💅 Làm móng</h4>
+                <p>Thiết kế móng nghệ thuật, gel, sơn dưỡng chuyên sâu.</p>
+            </div>
+            <div class="col-md-4" data-aos="zoom-in">
+                <h4>🧖‍♀️ Chăm sóc da</h4>
+                <p>Facial thư giãn, detox làn da và cấp ẩm cao cấp.</p>
+            </div>
+            <div class="col-md-4" data-aos="fade-left">
+                <h4>👣 Massage chân</h4>
+                <p>Liệu trình thảo dược, giảm stress và thư giãn tối đa.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer-section text-light position-relative" style="background: url('https://www.nailsstudio.org/wp-content/uploads/2025/01/414734045_2617477238400507_8980465164347045817_n-1.jpg') center/cover no-repeat; background-attachment: fixed;">
+    <div class="wave-top">
+        <svg viewBox="0 0 1440 150" preserveAspectRatio="none" style="width:100%; height:100px; display:block">
+            <path d="M0,80 C480,200 960,0 1440,120 L1440,0 L0,0 Z" fill="white" opacity="0.2"></path>
+            <path d="M0,100 C600,180 960,20 1440,100 L1440,0 L0,0 Z" fill="white" opacity="0.1"></path>
+            <path d="M0,120 C600,160 960,40 1440,80 L1440,0 L0,0 Z" fill="white" opacity="0.05"></path>
+        </svg>
+    </div>
+
+    <div class="container py-5">
+        <div class="row text-white">
+            <!-- Cột 1 -->
+            <div class="col-md-4 mb-4">
+                <h4 class="fw-bold">MINH HÒA NAIL & SPA</h4>
+                <ul class="list-unstyled mt-3">
+                    <li>📍 18 Lacasta, Văn Phú, Phú La, Hà Đông, Hà Nội</li>
+                    <li>📞 0936066207</li>
+                    <li>📧 minhhoanal&spa@gmail.com</li>
+                    <li>🌐 <a href="https://www.facebook.com/mishinshin18" class="text-light">minhhoanal&spa.facebook</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 2 -->
+            <div class="col-md-4 mb-4">
+                <h4 class="fw-bold">Tìm chúng tôi</h4>
+                <iframe style="border: 0; width: 100%; height: 200px; border-radius: 10px;" loading="lazy"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.8373574457933!2d105.76269891010958!3d20.959045680592265!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313452db42a94913%3A0x847293291a7dec31!2sMinh%20H%C3%B2a%20Beauty%20Nails!5e0!3m2!1svi!2s!4v1747480795661!5m2!1svi!2s"
+                        allowfullscreen></iframe>
+            </div>
+
+            <!-- Cột 3 -->
+            <div class="col-md-4 mb-4">
+                <h4 class="fw-bold">Fanpage</h4>
+                <div class="fb-page" data-href="https://www.facebook.com/profile.php?id=61555043189899"
+                     data-tabs="timeline" data-width="" data-height="250"
+                     data-small-header="false" data-adapt-container-width="true"
+                     data-hide-cover="false" data-show-facepile="true">
+                    <blockquote cite="https://www.facebook.com/profile.php?id=61555043189899"
+                                class="fb-xfbml-parse-ignore">
+                        <a href="https://www.facebook.com/mishinshin18">Minh Hòa Nail & Spa</a>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-white py-3" style="background-color: rgba(0,0,0,0.3); font-size: 14px;">
+        &copy; 2025 - MINH HÒA NAIL & SPA. All rights reserved.
+    </div>
+</footer>
+
+<!-- AOS JS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true
+    });
+</script>

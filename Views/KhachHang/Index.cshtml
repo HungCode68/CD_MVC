@@ -1,0 +1,267 @@
+﻿@model List<NailMVC.Models.KhachHang>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2 class="text-primary mb-4">Danh sách khách hàng</h2>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="soDienThoai" class="form-control" placeholder="Nhập số điện thoại"
+               value="@(ViewBag.SoDienThoai ?? "")" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
+    </div>
+</form>
+
+
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">➕ Thêm khách hàng</button>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Họ tên</th>
+            <th>SĐT</th>
+            <th>Email</th>
+            <th>Giới tính</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.HoTen</td>
+                <td>@item.SoDienThoai</td>
+                <td>@item.Email</td>
+                <td>@item.GioiTinh</td>
+                <td>
+                    <button class="btn btn-sm btn-warning me-1" onclick="showEditModal(@item.Id)">Sửa</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteKhachHang(@item.Id)">Xoá</button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Thêm khách hàng -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addModalLabel">Thêm khách hàng mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label>Họ tên</label>
+                            <input class="form-control" name="HoTen" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Số điện thoại</label>
+                            <input class="form-control" name="SoDienThoai" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input class="form-control" name="Email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Giới tính</label>
+                            <select class="form-select" name="GioiTinh">
+                                <option>Nam</option>
+                                <option>Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label>Địa chỉ</label>
+                            <input class="form-control" name="DiaChi" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Ngày sinh</label>
+                            <input type="date" class="form-control" name="NgaySinh" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="submitForm()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa khách hàng -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="editModalLabel">Sửa thông tin khách hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" name="Id" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label>Họ tên</label>
+                            <input class="form-control" name="HoTen" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Số điện thoại</label>
+                            <input class="form-control" name="SoDienThoai" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input class="form-control" name="Email" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Giới tính</label>
+                            <select class="form-select" name="GioiTinh">
+                                <option>Nam</option>
+                                <option>Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label>Địa chỉ</label>
+                            <input class="form-control" name="DiaChi" />
+                        </div>
+                        <div class="col-md-6">
+                            <label>Ngày sinh</label>
+                            <input type="date" class="form-control" name="NgaySinh" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditForm()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const apiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        function submitForm() {
+            const form = document.getElementById("createForm");
+            const formData = new FormData(form);
+            const obj = {};
+
+            formData.forEach((value, key) => {
+                if (value) obj[key] = value;
+            });
+
+            fetch(apiBaseUrl + "KhachHang", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(obj)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire("Thành công!", "Khách hàng đã được thêm.", "success")
+                        .then(() => location.reload());
+                } else {
+                    return response.text().then(msg => { throw new Error(msg); });
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi:", error);
+                Swal.fire("Lỗi!", "Thêm khách hàng thất bại!", "error");
+            });
+        }
+
+        function showEditModal(id) {
+            fetch(`${apiBaseUrl}KhachHang/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.getElementById("editForm");
+                    for (let key in data) {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            input.value = (key === "NgaySinh" && data[key])
+                                ? data[key].split('T')[0]
+                                : data[key];
+                        }
+                    }
+                    new bootstrap.Modal(document.getElementById("editModal")).show();
+                })
+                .catch(err => {
+                    console.error("Lỗi khi lấy dữ liệu:", err);
+                    Swal.fire("Lỗi!", "Không thể tải dữ liệu khách hàng.", "error");
+                });
+        }
+
+        function submitEditForm() {
+            const form = document.getElementById("editForm");
+            const formData = new FormData(form);
+            const obj = {};
+
+            formData.forEach((value, key) => {
+                if (value) obj[key] = value;
+            });
+
+            fetch(`${apiBaseUrl}KhachHang/${obj.Id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(obj)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire("Thành công!", "Khách hàng đã được cập nhật.", "success")
+                        .then(() => location.reload());
+                } else {
+                    return response.text().then(msg => { throw new Error(msg); });
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi:", error);
+                Swal.fire("Lỗi!", "Cập nhật khách hàng thất bại!", "error");
+            });
+        }
+
+        function deleteKhachHang(id) {
+            Swal.fire({
+                title: "Bạn có chắc chắn?",
+                text: "Hành động này sẽ xoá khách hàng!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xoá",
+                cancelButtonText: "Hủy",
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`${apiBaseUrl}KhachHang/${id}`, {
+                        method: "DELETE"
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            Swal.fire("Đã xoá!", "Khách hàng đã được xoá.", "success")
+                                .then(() => location.reload());
+                        } else {
+                            return response.text().then(msg => { throw new Error(msg); });
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Lỗi:", error);
+                        Swal.fire("Lỗi!", "Không thể xoá khách hàng.", "error");
+                    });
+                }
+            });
+        }
+    </script>
+}
+

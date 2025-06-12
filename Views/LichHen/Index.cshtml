@@ -1,0 +1,302 @@
+﻿@model List<NailMVC.Models.LichHen>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + 1); // Monday
+    var endOfWeek = startOfWeek.AddDays(6);
+}
+
+<h2 class="text-primary mb-3">📅 Lịch hẹn trong tuần</h2>
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-warning mb-3" data-bs-toggle="modal" data-bs-target="#editModal">✏️ Chỉnh sửa lịch hẹn</button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">➕ Thêm lịch hẹn</button>
+</div>
+
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="fw-bold">Từ @startOfWeek đến @endOfWeek</span>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Giờ / Ngày</th>
+                @for (int i = 0; i < 7; i++)
+                {
+                    var day = startOfWeek.AddDays(i);
+                    <th>@day.ToString("dddd dd/MM")</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int hour = 8; hour <= 22; hour++)
+            {
+                <tr>
+                    <td class="fw-bold">@hour:00</td>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var date = startOfWeek.AddDays(i);
+                        var slot = Model.FirstOrDefault(l =>
+                        l.NgayHen?.Date == date.Date &&
+                        l.NgayHen?.Hour == hour);
+
+                        if (slot != null)
+                        {
+                            <td class="bg-primary text-white position-relative" style="cursor:pointer;" onclick="showDetail(@slot.Id)">
+                                <div>
+                                    <strong>🧑‍💼 @slot.NhanVienId</strong><br />
+                                    💅 @slot.DichVuId<br />
+                                    ⏰ @slot.NgayHen?.ToString("HH:mm")<br />
+                                    <small>Trạng thái: @slot.TrangThai</small>
+                                </div>
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Thêm Lịch Hẹn -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Thêm lịch hẹn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="mb-3">
+                        <label>Ngày hẹn</label>
+                        <input type="datetime-local" class="form-control" name="NgayHen" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Khách hàng</label>
+                        <select name="KhachHangId" class="form-select" required>
+                            <option value="">-- Chọn khách hàng --</option>
+                            @foreach (var kh in ViewBag.KhachHangs)
+                            {
+                                <option value="@kh.Id">@kh.Id - @kh.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Nhân viên</label>
+                        <select name="NhanVienId" class="form-select" required>
+                            <option value="">-- Chọn nhân viên --</option>
+                            @foreach (var nv in ViewBag.NhanViens)
+                            {
+                                <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Dịch vụ</label>
+                        <select name="DichVuId" class="form-select" required>
+                            <option value="">-- Chọn dịch vụ --</option>
+                            @foreach (var dv in ViewBag.DichVus)
+                            {
+                                <option value="@dv.Id">@dv.Id - @dv.TenDichVu</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Ghi chú</label>
+                        <textarea class="form-control" name="GhiChu"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Trạng thái</label>
+                        <select name="TrangThai" class="form-select" required>
+                            <option value="DaDat">Đã đặt</option>
+                            <option value="DaHuy">Đã hủy</option>
+                            <option value="HoanThanh">Hoàn thành</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-primary" onclick="submitForm()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chỉnh sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Chỉnh sửa lịch hẹn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Dropdown chọn lịch hẹn -->
+                <div class="mb-3">
+                    <label>Chọn lịch hẹn cần sửa</label>
+                    <select class="form-select" id="selectLichHen" onchange="loadLichHenData()">
+                        <option value="">-- Chọn lịch hẹn --</option>
+                        @foreach (var item in Model)
+                        {
+                            var ngay = item.NgayHen?.ToString("dd/MM/yyyy HH:mm");
+                            <option value="@item.Id">@item.Id - KH @item.KhachHangId - @ngay</option>
+                        }
+                    </select>
+                </div>
+
+                <form id="editForm">
+                    <input type="hidden" name="Id" />
+                    <div class="mb-3">
+                        <label>Ngày hẹn</label>
+                        <input type="datetime-local" class="form-control" name="NgayHen" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Khách hàng</label>
+                        <select name="KhachHangId" class="form-select" required>
+                            @foreach (var kh in ViewBag.KhachHangs)
+                            {
+                                <option value="@kh.Id">@kh.Id - @kh.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Nhân viên</label>
+                        <select name="NhanVienId" class="form-select" required>
+                            @foreach (var nv in ViewBag.NhanViens)
+                            {
+                                <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Dịch vụ</label>
+                        <select name="DichVuId" class="form-select" required>
+                            @foreach (var dv in ViewBag.DichVus)
+                            {
+                                <option value="@dv.Id">@dv.Id - @dv.TenDichVu</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Ghi chú</label>
+                        <textarea class="form-control" name="GhiChu"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Trạng thái</label>
+                        <select name="TrangThai" class="form-select">
+                            <option value="DaDat">Đã đặt</option>
+                            <option value="DaHuy">Đã hủy</option>
+                            <option value="HoanThanh">Hoàn thành</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-primary" onclick="submitEditForm()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const apiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+               function showDetail(id) {
+            fetch(`/LichHen/GetChiTiet/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const ngayHen = new Date(data.ngayHen).toLocaleString('vi-VN');
+                    Swal.fire({
+                        title: "📌 Chi tiết lịch hẹn",
+                        html: `
+                            <div class="text-start">
+                                <p><strong>📅 Ngày hẹn:</strong> ${ngayHen}</p>
+                                <p><strong>👤 Khách hàng:</strong> ${data.tenKhachHang}</p>
+                                <p><strong>🧑‍💼 Nhân viên:</strong> ${data.tenNhanVien}</p>
+                                <p><strong>💅 Dịch vụ:</strong> ${data.tenDichVu}</p>
+                                <p><strong>📝 Ghi chú:</strong> ${data.ghiChu || "Không có"}</p>
+                                <p><strong>📌 Trạng thái:</strong> ${data.trangThai}</p>
+                            </div>
+                        `,
+                        icon: "info",
+                        confirmButtonText: "Đóng"
+                    });
+                })
+                .catch(err => {
+                    console.error("Lỗi khi lấy chi tiết:", err);
+                    Swal.fire("Lỗi", "Không thể tải chi tiết lịch hẹn.", "error");
+                });
+        }
+
+            function submitForm() {
+            const formData = new FormData(document.getElementById("createForm"));
+            const obj = {};
+            formData.forEach((value, key) => {
+                if (value) obj[key] = value;
+            });
+
+            fetch(`${apiBaseUrl}LichHen`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            })
+            .then(res => {
+                if (res.ok) {
+                    Swal.fire("Thành công!", "Đã thêm lịch hẹn.", "success").then(() => location.reload());
+                } else {
+                    throw new Error("Thêm lịch hẹn thất bại!");
+                }
+            })
+            .catch(err => Swal.fire("Lỗi", err.message, "error"));
+        }
+
+             function loadLichHenData() {
+            const id = document.getElementById("selectLichHen").value;
+            if (!id) return;
+
+            fetch(`${apiBaseUrl}LichHen/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.getElementById("editForm");
+                    for (let key in data) {
+                        const field = form.querySelector(`[name="${key}"]`);
+                        if (field) {
+                            if (key === "ngayHen") {
+                                const dt = new Date(data[key]);
+                                field.value = dt.toISOString().slice(0, 16);
+                            } else {
+                                field.value = data[key];
+                            }
+                        }
+                    }
+                })
+                .catch(err => Swal.fire("Lỗi", "Không thể tải dữ liệu lịch hẹn.", "error"));
+        }
+
+        function submitEditForm() {
+            const form = document.getElementById("editForm");
+            const formData = new FormData(form);
+            const obj = {};
+            formData.forEach((v, k) => { if (v) obj[k] = v; });
+
+            fetch(`${apiBaseUrl}LichHen/${obj.Id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(obj)
+            })
+            .then(r => {
+                if (r.ok) Swal.fire("Thành công!", "Lịch hẹn đã được cập nhật.", "success").then(() => location.reload());
+                else throw new Error("Cập nhật thất bại");
+            })
+            .catch(e => Swal.fire("Thất bại!", e.message, "error"));
+        }
+    </script>
+}

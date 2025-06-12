@@ -1,0 +1,63 @@
+﻿@model NailMVC.Models.TaiKhoan
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = null; // Không dùng layout chung để có thể toàn màn hình
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-image: url('https://scontent.fhan14-3.fna.fbcdn.net/v/t1.6435-9/139853208_459699882083508_3024556903423408259_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=FeTQf4ytihIQ7kNvwGIzV3y&_nc_oc=AdmkWVzhph43AaTNAx2ozeSyoltr-J9PHHO2JBuPYL2he0kiYj7A20FtsU-XASXCm3w&_nc_zt=23&_nc_ht=scontent.fhan14-3.fna&_nc_gid=Ro5roWxGPFd8pJj6YjIcMw&oh=00_AfLxnHQpO3ZbjDFEczmtl_ZfRPSM2l9_SyaS-MrXhfw_GA&oe=684F9313');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Đăng nhập</h2>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+
+        <form method="post" asp-controller="Auth" asp-action="Login">
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+        </form>
+    </div>
+</body>
+</html>

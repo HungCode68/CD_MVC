@@ -1,0 +1,261 @@
+﻿@model List<NailMVC.Models.ChamCong>
+@{
+    ViewData["Title"] = "Quản lý chấm công";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2 class="text-primary mb-4">Danh sách chấm công</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">➕ Chấm công mới</button>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Nhân viên</th>
+            <th>Ngày</th>
+            <th>Giờ vào</th>
+            <th>Giờ ra</th>
+            <th>Hình ảnh</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cc in Model)
+        {
+            <tr>
+                <td>@cc.NhanVienId</td>
+                <td>@cc.Ngay.ToString("dd/MM/yyyy")</td>
+                <td>@cc.GioVao</td>
+                <td>@cc.GioRa</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(cc.HinhAnh))
+                    {
+                        <img src="@Url.Content("~/uploads/" + cc.HinhAnh)" alt="Ảnh" width="60" height="60" class="rounded-circle" />
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-warning btn-sm me-1" onclick="showEditModal(@cc.Id)">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteChamCong(@cc.Id)">Xoá</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Thêm -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addForm" enctype="multipart/form-data">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Thêm chấm công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label>Nhân viên</label>
+                    <select name="NhanVienId" class="form-control" required>
+                        <option value="">-- Chọn nhân viên --</option>
+                        @foreach (var nv in (List<NailMVC.Models.NhanVien>)ViewBag.NhanVienList)
+                        {
+                            <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                        }
+                    </select>
+
+                    <div class="mb-2">
+                        <label>Ngày</label>
+                        <input name="Ngay" class="form-control" type="date" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giờ vào</label>
+                        <input name="GioVao" class="form-control" type="time" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giờ ra</label>
+                        <input name="GioRa" class="form-control" type="time" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Ảnh chụp</label><br />
+                        <video id="video" width="100%" autoplay></video>
+                        <canvas id="canvas" class="d-none"></canvas>
+                        <input type="hidden" name="ImageData" id="ImageData" />
+                        <button type="button" class="btn btn-outline-primary mt-2" onclick="capturePhoto()">📷 Chụp ảnh</button>
+                        <img id="preview" class="img-thumbnail mt-2" style="display:none;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm" enctype="multipart/form-data">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Sửa chấm công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editId" />
+                    <label>Nhân viên</label>
+                    <select name="NhanVienId" id="editNhanVienId" class="form-control" required>
+                        <option value="">-- Chọn nhân viên --</option>
+                        @foreach (var nv in (List<NailMVC.Models.NhanVien>)ViewBag.NhanVienList)
+                        {
+                            <option value="@nv.Id">@nv.Id - @nv.HoTen</option>
+                        }
+                    </select>
+
+                    <div class="mb-2">
+                        <label>Ngày</label>
+                        <input name="Ngay" id="editNgay" class="form-control" type="date" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giờ vào</label>
+                        <input name="GioVao" id="editGioVao" class="form-control" type="time" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giờ ra</label>
+                        <input name="GioRa" id="editGioRa" class="form-control" type="time" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Ảnh đã chụp</label><br />
+                        <img id="editImagePreview" class="img-thumbnail" style="max-width: 100px; max-height: 100px;" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label>Ghi chú</label>
+                        <input name="GhiChu" id="editGhiChu" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- TODO: Modal sửa tương tự (gọi dữ liệu theo ID) -->
+@section Scripts {
+    <script>
+        const apiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const video = document.getElementById('video');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById("ImageData").value = dataUrl;
+            document.getElementById("preview").src = dataUrl;
+            document.getElementById("preview").style.display = "block";
+        }
+
+              async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('video').srcObject = stream;
+            } catch (err) {
+                console.error("Không thể mở webcam:", err.name, err.message);
+                Swal.fire("Lỗi webcam", `${err.name}: ${err.message}`, "error");
+            }
+        }
+
+
+        startCamera();
+
+        document.getElementById("addForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch(`${apiBaseUrl}ChamCong`, {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.ok ? Swal.fire("Thành công", "Đã chấm công", "success").then(() => location.reload()) :
+                res.text().then(msg => { throw new Error(msg); }))
+            .catch(err => Swal.fire("Lỗi", err.message, "error"));
+        });
+
+        function deleteChamCong(id) {
+            Swal.fire({
+                title: "Bạn chắc chắn xoá?",
+                text: "Dữ liệu sẽ không thể khôi phục!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xoá"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`${apiBaseUrl}ChamCong/${id}`, {
+                        method: "DELETE"
+                    }).then(res => res.ok ? location.reload() : alert("Xoá thất bại"));
+                }
+            });
+        }
+
+                      function showEditModal(id) {
+            fetch(`${apiBaseUrl}ChamCong/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("editId").value = data.Id;
+                    document.getElementById("editNhanVienId").value = data.NhanVienId;
+                    document.getElementById("editNgay").value = data.Ngay?.split("T")[0];
+                    document.getElementById("editGioVao").value = data.GioVao?.substring(0, 5);
+                    document.getElementById("editGioRa").value = data.GioRa?.substring(0, 5);
+                    document.getElementById("editGhiChu").value = data.GhiChu || "";
+
+                    const imgEl = document.getElementById("editImagePreview");
+                    if (data.HinhAnh) {
+                        imgEl.src = `${apiBaseUrl.replace(/\/+$/, "")}/../uploads/${data.HinhAnh}`;
+                        imgEl.style.display = "block";
+                        imgEl.setAttribute("data-filename", data.HinhAnh); // lưu tên ảnh gốc để gửi lại
+                    } else {
+                        imgEl.style.display = "none";
+                        imgEl.removeAttribute("data-filename");
+                    }
+
+                    new bootstrap.Modal(document.getElementById("editModal")).show();
+                })
+                .catch(err => Swal.fire("Lỗi", "Không tải được dữ liệu", "error"));
+        }
+
+        document.getElementById("editForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const id = document.getElementById("editId").value;
+            const formData = new FormData(this);
+            const jsonObj = {};
+            formData.forEach((val, key) => jsonObj[key] = val);
+
+            // Thêm lại HinhAnh nếu đang có ảnh đã lưu
+            jsonObj["HinhAnh"] = document.getElementById("editImagePreview").getAttribute("data-filename") || "";
+
+            fetch(`${apiBaseUrl}ChamCong/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonObj)
+            })
+            .then(res => res.ok
+                ? Swal.fire("Cập nhật thành công", "", "success").then(() => location.reload())
+                : res.text().then(msg => { throw new Error(msg); }))
+            .catch(err => Swal.fire("Lỗi", err.message, "error"));
+        });
+
+    </script>
+}

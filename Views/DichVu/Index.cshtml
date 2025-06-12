@@ -1,0 +1,156 @@
+﻿@model List<NailMVC.Models.DichVu>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Quản lý Dịch vụ";
+}
+
+<h2 class="text-primary mb-4">Danh sách Dịch vụ</h2>
+
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">➕ Thêm dịch vụ</button>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Tên dịch vụ</th>
+            <th>Mô tả</th>
+            <th>Giá</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.TenDichVu</td>
+                <td>@item.MoTa</td>
+                <td>@item.Gia.ToString("N0")</td>
+                <td>
+                    <button class="btn btn-warning btn-sm me-1" onclick="showEditModal(@item.Id)">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteDichVu(@item.Id)">Xóa</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Thêm -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Thêm Dịch vụ</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <label>Tên dịch vụ</label>
+                    <input class="form-control mb-2" name="TenDichVu" placeholder="Tên dịch vụ" required />
+                    <label>Mô tả</label>
+                    <textarea class="form-control mb-2" name="MoTa" placeholder="Mô tả"></textarea>
+                    <label>Giá tiền</label>
+                    <input type="number" class="form-control" name="Gia" placeholder="Giá" required />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-primary" onclick="submitCreate()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Sửa Dịch vụ</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" name="Id" />
+                    <label>Tên dịch vụ</label>
+                    <input class="form-control mb-2" name="TenDichVu" placeholder="Tên dịch vụ" required />
+                    <label>Mô tả</label>
+                    <textarea class="form-control mb-2" name="MoTa" placeholder="Mô tả"></textarea>
+                    <label>Giá tiền</label>
+                    <input type="number" class="form-control" name="Gia" placeholder="Giá" required />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-primary" onclick="submitEdit()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const apiBaseUrl = "@ViewBag.ApiBaseUrl";
+
+        function submitCreate() {
+            const form = document.getElementById("createForm");
+            const data = Object.fromEntries(new FormData(form).entries());
+
+            fetch(apiBaseUrl + "DichVu", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.ok ? Swal.fire("Thành công", "Đã thêm dịch vụ", "success").then(() => location.reload())
+                                : res.text().then(t => { throw new Error(t) }))
+            .catch(err => Swal.fire("Lỗi", err.message, "error"));
+        }
+
+        function showEditModal(id) {
+            fetch(`${apiBaseUrl}DichVu/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const form = document.getElementById("editForm");
+                    for (const key in data) {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) input.value = data[key];
+                    }
+                    new bootstrap.Modal(document.getElementById("editModal")).show();
+                })
+                .catch(() => Swal.fire("Lỗi", "Không tải được dữ liệu", "error"));
+        }
+
+        function submitEdit() {
+            const form = document.getElementById("editForm");
+            const data = Object.fromEntries(new FormData(form).entries());
+
+            fetch(`${apiBaseUrl}DichVu/${data.Id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.ok ? Swal.fire("Thành công", "Đã cập nhật dịch vụ", "success").then(() => location.reload())
+                                : res.text().then(t => { throw new Error(t) }))
+            .catch(err => Swal.fire("Lỗi", err.message, "error"));
+        }
+
+        function deleteDichVu(id) {
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Dịch vụ sẽ bị xoá vĩnh viễn!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xoá",
+                cancelButtonText: "Huỷ"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`${apiBaseUrl}DichVu/${id}`, { method: "DELETE" })
+                        .then(res => res.ok ? Swal.fire("Đã xoá", "Xoá thành công", "success").then(() => location.reload())
+                                            : res.text().then(t => { throw new Error(t) }))
+                        .catch(err => Swal.fire("Lỗi", err.message, "error"));
+                }
+            });
+        }
+    </script>
+}

@@ -40,7 +40,7 @@
         stage('Deploy') {
             steps {
                 echo 'Deploying to folder'
-                bat 'xcopy "%WORKSPACE%\\publish" /E /Y /I /R "c:\\wwwroot\\myproject"'
+                bat 'xcopy "%WORKSPACE%\\publish" /E /Y /I /R "D:\\wwwroot\\myproject"'
             }
         }
         
@@ -49,7 +49,7 @@
                 powershell '''
                     Import-Module WebAdministration
                     if (-not (Get-Website -Name "MySite" -ErrorAction SilentlyContinue)) {
-                        New-Website -Name "MySite" -Port 81 -PhysicalPath "c:\\wwwroot\\myproject"
+                        New-Website -Name "MySite" -Port 81 -PhysicalPath "D:\\wwwroot\\myproject"
                         Write-Host "Website MySite created successfully"
                     } else {
                         Write-Host "Website MySite already exists"

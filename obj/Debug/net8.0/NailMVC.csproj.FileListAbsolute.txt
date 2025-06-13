@@ -139,3 +139,4 @@ D:\Code C#\NailMVC\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resourc
 D:\Code C#\NailMVC\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 D:\Code C#\NailMVC\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
 D:\Code C#\NailMVC\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\Code C#\NailMVC\obj\Debug\net8.0\NailMVC.sourcelink.json

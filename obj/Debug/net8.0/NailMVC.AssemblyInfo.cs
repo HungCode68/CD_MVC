@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NailMVC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9058bd784f5a5391f806614a0ec844e3d1111ca")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6cf82e0f463d8e370be688746113a30f7219a48d")]
 [assembly: System.Reflection.AssemblyProductAttribute("NailMVC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NailMVC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
